@@ -24,6 +24,7 @@
             <v-spacer></v-spacer>
             <v-btn @click="save"
                    color="info"
+                   depressed
                    :loading="loadingSave"
                    :disabled="loadingSave">Сохранить</v-btn>
         </v-card-actions>

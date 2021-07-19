@@ -8,6 +8,7 @@
                    fab
                    class=""
                    small
+                   depressed
                    v-bind="attrs"
                    v-on="on">
                 <v-icon>
