@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 using OrderCheck.DAL.Interfaces;
 using OrderCheck.Models;
 using OrderCheck.Web.Services;
-using OrderCheck.Web.ViewModels;
 
 namespace OrderCheck.Web.Controllers.API
 {
@@ -117,10 +116,12 @@ namespace OrderCheck.Web.Controllers.API
                     EstateId = item.EstateId,
 
                     OwnerId = _userService.GetUserAsync().Result.Id,
-                    Created = DateTime.Now
+                    Created = DateTime.Now,
+                    QrInfo = await _imageService.QrInfo(docFile)
                 };
 
                 newItem.ImagePath = _imageService.CropAndSaveImage(newItem.Guid, docFile);
+                
 
                 if (checkFile != null && checkFile.Length > 0)
                     newItem.CheckImagePath = _imageService.CropAndSaveImage(newItem.Guid, checkFile, "_check");
@@ -170,7 +171,10 @@ namespace OrderCheck.Web.Controllers.API
                 existItem.DateStart = item.DateStart;
 
                 if (docFile != null && docFile.Length > 0)
+                {
                     existItem.ImagePath = _imageService.CropAndSaveImage(existItem.Guid, docFile);
+                    existItem.QrInfo = await _imageService.QrInfo(docFile);
+                }
 
                 if (checkFile != null && checkFile.Length > 0)
                     existItem.CheckImagePath = _imageService.CropAndSaveImage(existItem.Guid, checkFile, "_check");
@@ -185,28 +189,42 @@ namespace OrderCheck.Web.Controllers.API
             }
         }
 
-        //[HttpDelete]
-        //public async Task<IActionResult> DeleteItem([FromForm] int EstateId)
-        //{
-        //    try
-        //    {
-        //        var existItem = await _estateRepository.FindByIdAsync(EstateId);
+        [HttpPost("info")]
+        public async Task<Object> GetQrInfo([FromForm] IFormFile docFile)
+        {
+            try
+            {
+                var result = new { info = await _imageService.QrInfo(docFile) };
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
 
-        //        if (existItem == null)
-        //            return NotFound();
+        [HttpDelete]
+        public async Task<IActionResult> DeleteItem([FromForm] Guid guid)
+        {
+            try
+            {
+                var existItem = await _documentRepository.DocumentByGuidAsync(guid);
 
-        //        if (existItem.OwnerId != _userService.GetUserAsync().Result.Id)
-        //            return BadRequest("Ошибка доступа к записи - вы не владелец");
+                if (existItem == null)
+                    return NotFound();
 
-        //        await _estateRepository.RemoveAsync(existItem.EstateId);
+                if (existItem.OwnerId != _userService.GetUserAsync().Result.Id)
+                    return BadRequest("Ошибка доступа к записи - вы не владелец");
 
-        //        return Ok(new { });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return BadRequest(new { error = ex.Message });
-        //    }
-        //}
+                await _documentRepository.RemoveAsync(existItem);
+
+                return Ok(new { });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
 
     }
 }

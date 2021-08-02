@@ -71,7 +71,32 @@ namespace OrderCheck.DAL.Repositories
             return item == null ? null : item;
         }
 
+        public async Task<TEntity> FindByIdAsync(long id)
+        {
+            TEntity item = await _context.Set<TEntity>()
+                .FindAsync(id);
+
+            return item == null ? null : item;
+        }
+        
+        public async Task<TEntity> FindByIdAsync(Guid id)
+        {
+            TEntity item = await _context.Set<TEntity>()
+                .FindAsync(id);
+
+            return item == null ? null : item;
+        }
+
         public async Task RemoveAsync(int id)
+        {
+            TEntity item = await _context.Set<TEntity>()
+                            .FindAsync(id);
+
+            _context.Remove(item);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task RemoveAsync(long id)
         {
             TEntity item = await _context.Set<TEntity>()
                             .FindAsync(id);

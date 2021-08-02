@@ -1,10 +1,14 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using OrderCheck.Web.Extensions;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Threading.Tasks;
+using ZXing;
+using ZXing.Common;
 
 namespace OrderCheck.Web.Services
 {
@@ -88,7 +92,6 @@ namespace OrderCheck.Web.Services
             //return scaledImage;
         }
 
-
         private string SaveOriginalFile(IFormFile file)
         {
             var filePath = Path.GetTempFileName();
@@ -112,6 +115,26 @@ namespace OrderCheck.Web.Services
                     return encoders[j];
             }
             return null;
+        }
+
+        public async Task<string> QrInfo(IFormFile file)
+        {
+            var tempFile = await file.SaveToTempFile();
+
+            var reader = new BarcodeReader() {
+                TryInverted = true,
+                AutoRotate = true,
+                Options = new DecodingOptions
+                {
+                    TryHarder = true,
+                }
+            };
+
+            var img = Image.FromFile(tempFile);
+
+            var result = reader.Decode(new Bitmap(img));
+
+            return result?.Text ?? "";
         }
     }
 }

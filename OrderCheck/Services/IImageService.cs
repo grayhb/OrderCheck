@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
+using System.Threading.Tasks;
 
 namespace OrderCheck.Web.Services
 {
@@ -7,5 +8,6 @@ namespace OrderCheck.Web.Services
     {
         string CropAndSaveImage(Guid guid, IFormFile file, string suffixFileName = "");
 
+        Task<string> QrInfo(IFormFile file);
     }
 }

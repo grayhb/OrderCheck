@@ -10,5 +10,7 @@ namespace OrderCheck.DAL.Interfaces
     {
         Task<List<Document>> DocumentsByOwnerIdAsync(string ownerId);
         Task<Document> DocumentByGuidAsync(Guid guid);
+
+        Task RemoveAsync(Document item);
     }
 }

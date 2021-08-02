@@ -8,6 +8,8 @@ namespace OrderCheck.DAL.Interfaces
     public interface IBaseRepository<TEntity> where TEntity : class
     {
         Task<TEntity> FindByIdAsync(int id);
+        Task<TEntity> FindByIdAsync(long id);
+        Task<TEntity> FindByIdAsync(Guid id);
 
         Task CreateAsync(TEntity item);
         Task CreateAsync(List<TEntity> items);
@@ -16,6 +18,7 @@ namespace OrderCheck.DAL.Interfaces
         Task EditAsync(List<TEntity> items);
 
         Task RemoveAsync(int id);
+        Task RemoveAsync(long id);
 
         Task<bool> ExistsAsync(int id);
 
@@ -34,3 +37,4 @@ namespace OrderCheck.DAL.Interfaces
         Task<TEntity> SingleOrDefaultAsync(Expression<Func<TEntity, bool>> predicate);
     }
 }
+

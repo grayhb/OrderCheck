@@ -54,6 +54,8 @@ namespace OrderCheck.Models
 
         public bool Deleted { get; set; }
 
+        public string QrInfo { get; set; }
+
         [NotMapped]
         public bool HaveCheck
         {

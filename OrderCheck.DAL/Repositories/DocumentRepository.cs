@@ -34,5 +34,12 @@ namespace OrderCheck.DAL.Repositories
                 .Where(e => !e.Deleted && e.OwnerId == ownerId)
                 .ToListAsync();
         }
+
+        public async Task RemoveAsync(Document item)
+        {
+            item.Deleted = true;
+            _context.Update(item);
+            await _context.SaveChangesAsync();
+        }
     }
 }

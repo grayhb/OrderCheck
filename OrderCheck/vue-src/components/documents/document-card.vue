@@ -46,6 +46,7 @@
                         <v-col cols="8">
                             <v-file-input v-model="item.docFile"
                                           accept="image/*"
+                                          @change="getQrInfo"
                                           label="Файл документа"></v-file-input>
                         </v-col>
 
@@ -66,19 +67,19 @@
 
                         <v-col cols="12">
                             <v-select v-model="item.estateId"
-                                        :items="estates"
-                                        item-value="estateId"
-                                        item-text="estateName"
-                                        dense
-                                        label="Объект"></v-select>
+                                      :items="estates"
+                                      item-value="estateId"
+                                      item-text="estateName"
+                                      dense
+                                      label="Объект"></v-select>
                         </v-col>
                         <v-col cols="12">
                             <v-select v-model="item.organizationId"
-                                        :items="organizations"
-                                        item-value="organizationId"
-                                        item-text="organizationName"
-                                        dense
-                                        label="Организация"></v-select>
+                                      :items="organizations"
+                                      item-value="organizationId"
+                                      item-text="organizationName"
+                                      dense
+                                      label="Организация"></v-select>
 
                         </v-col>
 
@@ -90,10 +91,19 @@
                         </v-col>
 
                         <v-col cols="6">
-                            <v-text-field v-model="item.paid"
-                                          label="Оплачено"
-                                          value="0.00"
-                                          suffix="руб."></v-text-field>
+                            <div class="d-flex align-center">
+                                
+                                <v-btn x-small fab depressed class="mr-2" @click="copyDebtToPaid">
+                                    <v-icon>
+                                        mdi-arrow-right-bold
+                                    </v-icon>
+                                </v-btn>
+
+                                <v-text-field v-model="item.paid"
+                                              label="Оплачено"
+                                              value="0.00"
+                                              suffix="руб."></v-text-field>
+                            </div>
                         </v-col>
 
                         <v-col cols="6">
@@ -284,20 +294,60 @@
 
             },
             async deleteItem() {
-                //let formData = new FormData();
-                //formData.append('estateId', this.item.estateId);
+                let formData = new FormData();
+                formData.append('guid', this.item.guid);
 
-                //await doFetch('/api/estates', 'DELETE', this.$store, formData, data => {
-                //    this.$emit('update')
-                //    this.close();
-                //});
+                await doFetch('/api/document', 'DELETE', this.$store, formData, data => {
+                    this.$emit('delete');
+                    this.close();
+                });
             },
             onDateStartChange(e) {
-
                 let splitDate = e.split('-');
                 let splitDateEnd = new Date(splitDate[0], splitDate[1], 0).toLocaleDateString('ru-RU').split('.');
 
                 this.item.dateEnd = splitDateEnd[2] + '-' + splitDateEnd[1] + '-' + splitDateEnd[0];
+            },
+
+            async getQrInfo() {
+                if (!this.item.docFile)
+                    return;
+
+                let formData = new FormData();
+                formData.append('docFile', this.item.docFile);
+
+                await doFetch('/api/document/info', 'POST', this.$store, formData, data => {
+                    let infoRaw = data.info.split('|');
+                    infoRaw.forEach(infoField => {
+
+                        // организация
+                        if (infoField.indexOf('Name') === 0) {
+                            let item = this.organizations.filter(e => e.organizationName === infoField.split('=')[1]);
+                            if (item.length > 0)
+                                this.item.organizationId = item[0].organizationId;
+                        }
+
+                        // сумма
+                        if (infoField.indexOf('Sum') === 0) {
+                            let sum = infoField.split('=')[1];
+                            this.item.debt = sum.slice(0, sum.length - 2);
+                        }
+
+                        // период
+                        if (infoField.indexOf('paymPeriod') === 0) {
+                            let item = infoField.split('=')[1];
+                            let monthNumber = Number(item.substr(0, 2));
+                            let year = Number(item.substr(2, 2));
+                            this.item.dateStart = new Date(Number('20' + year), monthNumber - 1, 1).toISOString();
+                            this.onDateStartChange(new Date(Number('20' + year), monthNumber , 1).toISOString());
+                        }
+                        //
+                    });
+                });
+            },
+
+            copyDebtToPaid() {
+                this.item.paid = this.item.debt;
             }
         }
     };

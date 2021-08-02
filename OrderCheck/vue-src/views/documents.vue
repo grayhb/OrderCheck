@@ -7,6 +7,7 @@
                           :organizations="organizations"
                           :estates="estates"
                           v-on:update="loadItems"
+                          @delete="deleteItem"
                           v-on:close="closeCard"></cardDocument>
 
             <span class="ml-4">Документы</span>
@@ -272,6 +273,18 @@
                     let d = new Date(e.dateStart);
                     return d.getFullYear() === m.year && d.getMonth() === m.month;
                 });
+
+            },
+
+            deleteItem() {
+
+                try {
+                    let itemIndex = this.items.findIndex(e => e.guid === this.selectedItem.guid);
+                    this.items.splice(itemIndex, 1);
+                }
+                catch (ex) {
+                    console.log(ex);
+                }
 
             }
 
