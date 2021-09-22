@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using OrderCheck.Web.Extensions;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -129,6 +130,7 @@ namespace OrderCheck.Web.Services
                     TryHarder = true,
                 }
             };
+            reader.Options.PossibleFormats = new List<BarcodeFormat>() { BarcodeFormat.QR_CODE };
 
             var img = Image.FromFile(tempFile);
 
