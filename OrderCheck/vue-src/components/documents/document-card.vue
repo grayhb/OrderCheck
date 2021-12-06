@@ -47,6 +47,7 @@
                             <v-file-input v-model="item.docFile"
                                           accept="image/*"
                                           @change="getQrInfo"
+                                          :loading="qrLoading"
                                           label="Файл документа"></v-file-input>
                         </v-col>
 
@@ -254,6 +255,7 @@
             menuDateEnd: false,
             overlayDoc: false,
             overlayCheck: false,
+            qrLoading: false
         }),
         methods: {
             close() {
@@ -310,8 +312,11 @@
             },
 
             async getQrInfo() {
+
                 if (!this.item.docFile)
                     return;
+
+                this.qrLoading = true;
 
                 let formData = new FormData();
                 formData.append('docFile', this.item.docFile);
@@ -323,6 +328,13 @@
                         // организация
                         if (infoField.indexOf('Name') === 0) {
                             let item = this.organizations.filter(e => e.organizationName === infoField.split('=')[1]);
+                            if (item.length > 0)
+                                this.item.organizationId = item[0].organizationId;
+                        }
+
+                        // ИНН
+                        if (infoField && infoField.toLocaleLowerCase() === "payeeinn") {
+                            let item = this.organizations.filter(e => e.inn === infoField.split('=')[1]);
                             if (item.length > 0)
                                 this.item.organizationId = item[0].organizationId;
                         }
@@ -344,6 +356,8 @@
                         //
                     });
                 });
+
+                this.qrLoading = false;
             },
 
             copyDebtToPaid() {

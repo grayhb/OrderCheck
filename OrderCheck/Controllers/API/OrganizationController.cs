@@ -52,6 +52,8 @@ namespace OrderCheck.Web.Controllers.API
                     OwnerId = _userService.GetUserAsync().Result.Id
                 };
 
+                newItem.Inn = item.Inn ?? "";
+
                 await _organizationRepository.CreateAsync(newItem);
 
                 return newItem;
@@ -76,6 +78,7 @@ namespace OrderCheck.Web.Controllers.API
                     return NotFound();
 
                 existItem.OrganizationName = item.OrganizationName;
+                existItem.Inn = item.Inn ?? "";
 
                 await _organizationRepository.EditAsync(existItem);
 

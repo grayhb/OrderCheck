@@ -64,16 +64,15 @@
 
                 <span v-if="monthPanels.length === 0" class="d-flex justify-center my-3">Записи не найдены</span>
 
-                    <v-sparkline :labels="chartLabels"
-                                 :value="chartValues"
-                                 label-size="4"
-                                 line-width="1"
-                                 class="mt-2"
-                                 padding="12"></v-sparkline>
+                <v-sparkline :labels="chartLabels"
+                             :value="chartValues"
+                             label-size="4"
+                             line-width="1"
+                             class="mt-2"
+                             padding="12"></v-sparkline>
 
             </div>
         </v-card-text>
-
     </v-card>
 </template>
 
@@ -126,40 +125,33 @@
                 return debt.toLocaleString();
             },
 
+            currentMonths() {
+
+                let monthIndexes = this.items
+                    .filter(e => e.dateEnd.getFullYear() === this.selectedYear)
+                    .map(e => Number(e.dateEnd.getMonth()));
+
+                monthIndexes = [...new Set(monthIndexes)];
+
+                monthIndexes.sort((a, b) => b - a);
+
+                return monthIndexes;
+            },
             monthPanels() {
 
                 this.amountPaid = 0;
                 this.chartLabels = [];
                 this.chartValues = [];
 
-                let monthArray = [...new Set(this.items.map(e => {
-                    let d = new Date(e.dateStart);
-                    let y = d.getFullYear();
+                let panels = this.currentMonths.map(monthIndex => {
 
-                    if (y === this.selectedYear)
-                        return y + '-' + d.getMonth();
-                }))];
+                    let d = new Date(this.selectedYear, monthIndex, 1);
 
-                if (!monthArray[0])
-                    return [];
-
-                // сортируем от старых к новым
-                monthArray.sort((a, b) => {
-                    return a.localeCompare(b);
-                });
-
-                let monthIndex = 0;
-
-                let panels = monthArray.map(e => {
-
-                    let splitedDate = e.split('-');
-
-                    let d = new Date(splitedDate[0], splitedDate[1], 1);
                     let monthName = d.toLocaleString('default', { month: 'long' }).toLocaleUpperCase();
 
                     return {
-                        id: monthIndex++,
-                        name: monthName + ' ' + splitedDate[0],
+                        id: monthIndex,
+                        name: monthName,
                         month: d.getMonth(),
                         year: d.getFullYear()
                     };
@@ -207,15 +199,12 @@
                 await doFetch('/api/document', 'GET', this.$store, null, data => {
 
                     this.items = data.map(e => {
-
-                        e.dateStartFormated = new Date(e.dateStart).toLocaleDateString('ru-RU');
-                        e.dateEndFormated = new Date(e.dateEnd).toLocaleDateString('ru-RU');
-                        //e.haveCheck = e.haveCheck ? 'есть' : 'нет';
+                        e.dateStart = new Date(e.dateStart);
+                        e.dateEnd = new Date(e.dateEnd);
                         return e;
                     });
 
                     this.initYears();
-
                 });
 
                 await doFetch('/api/organization', 'GET', this.$store, null, data => {
@@ -264,14 +253,13 @@
 
                 this.years.sort();
 
-                this.selectedYear = this.years[0];
+                this.selectedYear = this.years[this.years.length - 1];
             },
 
             getItems(m) {
 
                 return this.items.filter(e => {
-                    let d = new Date(e.dateStart);
-                    return d.getFullYear() === m.year && d.getMonth() === m.month;
+                    return e.dateStart.getFullYear() === m.year && e.dateStart.getMonth() === m.month;
                 });
 
             },

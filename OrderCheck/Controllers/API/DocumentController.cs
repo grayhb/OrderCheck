@@ -107,7 +107,8 @@ namespace OrderCheck.Web.Controllers.API
 
                     Paid = item.Paid,
                     Debt = item.Debt,
-                    Note = item.Note,
+
+                    Note = item.Note ?? "",
 
                     DateEnd = item.DateEnd,
                     DateStart = item.DateStart,
@@ -121,7 +122,6 @@ namespace OrderCheck.Web.Controllers.API
                 };
 
                 newItem.ImagePath = _imageService.CropAndSaveImage(newItem.Guid, docFile);
-                
 
                 if (checkFile != null && checkFile.Length > 0)
                     newItem.CheckImagePath = _imageService.CropAndSaveImage(newItem.Guid, checkFile, "_check");
@@ -162,7 +162,7 @@ namespace OrderCheck.Web.Controllers.API
                 existItem.Organization = organization;
                 existItem.Estate = estate;
 
-                existItem.Note = item.Note;
+                existItem.Note = item.Note ?? "";
 
                 existItem.Paid = item.Paid;
                 existItem.Debt = item.Debt;
@@ -190,12 +190,11 @@ namespace OrderCheck.Web.Controllers.API
         }
 
         [HttpPost("info")]
-        public async Task<Object> GetQrInfo([FromForm] IFormFile docFile)
+        public async Task<ActionResult<object>> GetQrInfo([FromForm] IFormFile docFile)
         {
             try
             {
-                var result = new { info = await _imageService.QrInfo(docFile) };
-                return result;
+                return new { info = await _imageService.QrInfo(docFile) };
             }
             catch (Exception ex)
             {

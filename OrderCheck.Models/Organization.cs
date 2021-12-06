@@ -7,6 +7,7 @@ namespace OrderCheck.Models
     public class Organization
     {
         public int OrganizationId { get; set; }
+
         public string OrganizationName { get; set; }
 
         [JsonIgnore]
@@ -15,5 +16,7 @@ namespace OrderCheck.Models
         [JsonIgnore]
         [ForeignKey("OwnerId")]
         public User Owner { get; set; }
+
+        public string Inn { get; set; }
     }
 }

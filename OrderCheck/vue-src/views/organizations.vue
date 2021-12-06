@@ -27,6 +27,7 @@
     var organizationModel = {
         organizationId: 0,
         organizationName: '',
+        inn: ''
     };
 
     export default {
@@ -38,6 +39,7 @@
             items: [],
             headers: [
                 { text: 'Наименование', value: 'organizationName' },
+                { text: 'ИНН', value: 'inn' },
             ],
             loadingData: false,
 
@@ -55,12 +57,7 @@
             },
 
             editItem(e) {
-
-                this.selectedItem = {
-                    organizationId: e.organizationId,
-                    organizationName: e.organizationName,
-                };
-
+                this.selectedItem = JSON.parse(JSON.stringify(e));
                 this.showCard = true;
             },
 

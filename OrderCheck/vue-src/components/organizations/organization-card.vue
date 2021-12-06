@@ -31,18 +31,23 @@
             </v-card-title>
 
             <v-card-text class="card-body">
-                <v-container>
-                    <v-row>
-                        <v-col>
-                            <v-form v-model="validForm" ref="form">
+                <v-form v-model="validForm" ref="form">
+                    <v-container>
+                        <v-row>
+                            <v-col>
                                 <v-text-field v-model="item.organizationName"
                                               :rules="[rules.required]"
                                               label="Наименование"></v-text-field>
-
-                            </v-form>
-                        </v-col>
-                    </v-row>
-                </v-container>
+                            </v-col>
+                        </v-row>
+                        <v-row>
+                            <v-col>
+                                <v-text-field v-model="item.inn"
+                                              label="ИНН"></v-text-field>
+                            </v-col>
+                        </v-row>
+                    </v-container>
+                </v-form>
             </v-card-text>
 
             <v-card-actions>
@@ -82,6 +87,7 @@
 
                 let formData = new FormData();
                 formData.append('OrganizationName', this.item.organizationName);
+                formData.append('Inn', this.item.inn);
 
                 let method = 'POST';
 

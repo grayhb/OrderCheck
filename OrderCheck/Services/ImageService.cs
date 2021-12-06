@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using ZXing;
 using ZXing.Common;
@@ -87,10 +88,6 @@ namespace OrderCheck.Web.Services
             }
 
             return destImage;
-
-            //var scaledImage = image.GetThumbnailImage(w, h, () => false, IntPtr.Zero);
-
-            //return scaledImage;
         }
 
         private string SaveOriginalFile(IFormFile file)
@@ -107,15 +104,7 @@ namespace OrderCheck.Web.Services
 
         private ImageCodecInfo GetEncoderInfo(string mimeType)
         {
-            int j;
-            ImageCodecInfo[] encoders;
-            encoders = ImageCodecInfo.GetImageEncoders();
-            for (j = 0; j < encoders.Length; ++j)
-            {
-                if (encoders[j].MimeType == mimeType)
-                    return encoders[j];
-            }
-            return null;
+            return ImageCodecInfo.GetImageEncoders().FirstOrDefault(e => e.MimeType == mimeType);
         }
 
         public async Task<string> QrInfo(IFormFile file)
@@ -130,10 +119,11 @@ namespace OrderCheck.Web.Services
                     TryHarder = true,
                 }
             };
+
             reader.Options.PossibleFormats = new List<BarcodeFormat>() { BarcodeFormat.QR_CODE };
 
             var img = Image.FromFile(tempFile);
-
+            
             var result = reader.Decode(new Bitmap(img));
 
             return result?.Text ?? "";
