@@ -21,7 +21,7 @@
             <v-progress-linear indeterminate v-if="loadingData"></v-progress-linear>
             <div v-else>
                 <div class="d-flex mb-3 align-center">
-                    <v-combobox :items="years" v-model="selectedYear" outlined dense hide-details :elevation="0" style="max-width:130px"></v-combobox>
+                    <v-select :items="years" v-model="selectedYear" outlined dense hide-details :elevation="0" style="max-width:130px"></v-select>
                     <v-spacer></v-spacer>
                     <span class="mr-2">Расход за год</span>
                     <v-chip>{{amountPaidLocale}} ₽</v-chip>
@@ -32,7 +32,7 @@
                         <v-expansion-panel-content>
                             <v-list flat>
                                 <v-list-item-group>
-                                    <v-list-item v-for="item in getItems(month)" @click="editItem(item)">
+                                    <v-list-item v-for="item in getItems(month)" @click="editItem(item)" :key="item.guid">
                                         <v-list-item-content>
                                             <v-list-item-title>
                                                 {{ item.organization.organizationName }}
@@ -64,12 +64,8 @@
 
                 <span v-if="monthPanels.length === 0" class="d-flex justify-center my-3">Записи не найдены</span>
 
-                <v-sparkline :labels="chartLabels"
-                             :value="chartValues"
-                             label-size="4"
-                             line-width="1"
-                             class="mt-2"
-                             padding="12"></v-sparkline>
+
+                <chart-line :data="chartData" class="mt-4"></chart-line>
 
             </div>
         </v-card-text>
@@ -79,6 +75,7 @@
 <script>
     import { doFetch } from '../helpers/fetch-helper.js';
     import cardDocument from '../components/documents/document-card';
+    import chartLine from '../components/documents/chart-line';
 
     var modelItem = {
         guid: '',
@@ -96,7 +93,11 @@
     };
 
     export default {
-        created: function () {
+        components: {
+            chartLine,
+            cardDocument,
+        },
+        created() {
             this.loadItems();
         },
         data: () => ({
@@ -116,7 +117,6 @@
             amountPaid: 0,
 
             chartValues: [],
-            chartLabels: []
         }),
         computed: {
             amountDebt() {
@@ -140,7 +140,6 @@
             monthPanels() {
 
                 this.amountPaid = 0;
-                this.chartLabels = [];
                 this.chartValues = [];
 
                 let panels = this.currentMonths.map(monthIndex => {
@@ -168,15 +167,9 @@
                         }
                     });
 
-                    this.chartLabels.push(e.name.split(' ')[0]);
-                    this.chartValues.push(chartValue);
+                    this.chartValues.unshift(chartValue);
                 });
 
-                // добавляем пустые месяцы
-                while (this.chartValues.length < 12) {
-                    this.chartValues.push(0);
-                    this.chartLabels.push(new Date(this.selectedYear, this.chartValues.length - 1, 1).toLocaleString('default', { month: 'long' }).toLocaleUpperCase());
-                }
 
                 // сортируем панели от новых к старым
                 panels.sort((a, b) => {
@@ -188,7 +181,18 @@
 
             amountPaidLocale() {
                 return this.amountPaid.toLocaleString();
+            },
+
+            chartData() {
+                return [
+                    {
+                        label: 'Расход',
+                        backgroundColor: '#349eeb',
+                        data: this.chartValues
+                    }
+                ]
             }
+
         },
         methods: {
 
@@ -277,9 +281,7 @@
             }
 
         },
-        components: {
-            cardDocument
-        },
+
 
     };
 </script>
